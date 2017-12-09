@@ -157,12 +157,12 @@ proto._getMeasurements = function() {
 
 proto._getItemLayoutPosition = function( item ) {
   this._setRectSize( item.element, item.rect );
-  if ( this.isShifting || this.dragItemCount > 0 ) {
+  /*if ( this.isShifting || this.dragItemCount > 0 ) {
     var packMethod = this._getPackMethod();
     this.packer[ packMethod ]( item.rect );
-  } else {
+  } else {*/
     this.packer.pack( item.rect );
-  }
+  //}
 
   this._setMaxXY( item.rect );
   return item.rect;
@@ -443,47 +443,54 @@ proto.updateShiftTargets = function( dropItem ) {
   }, this );
 
   // reset shiftTargets
-  var isHorizontal = this._getOption('horizontal');
-  var segmentName = isHorizontal ? 'rowHeight' : 'columnWidth';
-  var measure = isHorizontal ? 'height' : 'width';
+  //var isHorizontal = this._getOption('horizontal');
+  //var segmentName = isHorizontal ? 'rowHeight' : 'columnWidth';
+  //var measure = isHorizontal ? 'height' : 'width';
 
   this.shiftTargetKeys = [];
   this.shiftTargets = [];
   var boundsSize;
-  var segment = this[ segmentName ];
-  segment = segment && segment + this.gutter;
-
-  if ( segment ) {
+  //var segment = this[ segmentName ];
+  //segment = segment && segment + this.gutter;
+  var items = this._getItemsForLayout( this.items );
+  
+  /*if ( segment ) {
     var segmentSpan = Math.ceil( dropItem.rect[ measure ] / segment );
-    var segs = Math.floor( ( this.shiftPacker[ measure ] + this.gutter ) / segment );
+    var segs = Math.min(Math.floor( ( this.shiftPacker[ measure ] + this.gutter ) / segment ), items.length + 1);
     boundsSize = ( segs - segmentSpan ) * segment;
     // add targets on top
     for ( var i=0; i < segs; i++ ) {
       var initialX = isHorizontal ? 0 : i * segment;
       var initialY = isHorizontal ? i * segment : 0;
+      // Column top target
       this._addShiftTarget( initialX, initialY, boundsSize );
     }
   } else {
     boundsSize = ( this.shiftPacker[ measure ] + this.gutter ) - dropItem.rect[ measure ];
     this._addShiftTarget( 0, 0, boundsSize );
-  }
+  }*/
 
   // pack each item to measure where shiftTargets are
-  var items = this._getItemsForLayout( this.items );
-  var packMethod = this._getPackMethod();
+  //var packMethod = this._getPackMethod();
+
+  // Reuse the last item to preserve a trailing slot
+  items.push(items[items.length - 1]);
+
   items.forEach( function( item ) {
     var rect = item.rect;
     this._setRectSize( item.element, rect );
-    this.shiftPacker[ packMethod ]( rect );
+    this.shiftPacker.pack( rect );
+    //this.shiftPacker[ packMethod ]( rect );
 
     // add top left corner
     this._addShiftTarget( rect.x, rect.y, boundsSize );
     // add bottom left / top right corner
-    var cornerX = isHorizontal ? rect.x + rect.width : rect.x;
-    var cornerY = isHorizontal ? rect.y : rect.y + rect.height;
-    this._addShiftTarget( cornerX, cornerY, boundsSize );
+    //var cornerX = isHorizontal ? rect.x + rect.width : rect.x;
+    //var cornerY = isHorizontal ? rect.y : rect.y + rect.height;
+    // Below item target
+    //this._addShiftTarget( cornerX, cornerY, boundsSize );
 
-    if ( segment ) {
+    /*if ( segment ) {
       // add targets for each column on bottom / row on right
       var segSpan = Math.round( rect[ measure ] / segment );
       for ( var i=1; i < segSpan; i++ ) {
@@ -491,9 +498,8 @@ proto.updateShiftTargets = function( dropItem ) {
         var segY = isHorizontal ? rect.y + segment * i : cornerY;
         this._addShiftTarget( segX, segY, boundsSize );
       }
-    }
+    }*/
   }, this );
-
 };
 
 proto._addShiftTarget = function( x, y, boundsSize ) {
@@ -555,9 +561,11 @@ proto.itemDragMove = function( elem, x, y ) {
 
   var _this = this;
   function onDrag() {
-    _this.shift( item, x, y );
-    item.positionDropPlaceholder();
-    _this.layout();
+    _this.shift( item, x, y );      //Moves the item to the closest slot
+    _this.sortItemsByPosition();
+    _this.layout();                 //Packs everything (move other items)
+    _this.updateShiftTargets( item );
+    item.positionDropPlaceholder(); //Move the placeholder around
   }
 
   // throttle
@@ -602,11 +610,12 @@ proto.itemDragEnd = function( elem ) {
   item.once( 'layout', onDragEndLayoutComplete );
   this.once( 'layoutComplete', onDragEndLayoutComplete );
   item.moveTo( item.rect.x, item.rect.y );
-  this.layout();
+//this.layout();
   this.dragItemCount = Math.max( 0, this.dragItemCount - 1 );
   this.sortItemsByPosition();
   item.disablePlacing();
   this.unstamp( item.element );
+  this.layout();
 };
 
 /**
