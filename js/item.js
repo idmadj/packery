@@ -100,6 +100,7 @@ proto.removeElem = function() {
 
 proto.showDropPlaceholder = function() {
   var dropPlaceholder = this.dropPlaceholder;
+  
   if ( !dropPlaceholder ) {
     // create dropPlaceholder
     dropPlaceholder = this.dropPlaceholder = document.createElement('div');
@@ -125,6 +126,19 @@ proto.hideDropPlaceholder = function() {
     parent.removeChild( this.dropPlaceholder );
   }
 };
+
+proto.isDragging = function() {
+  return !!this.dropPlaceholder;
+}
+
+var _remove = proto.remove;
+proto.remove = function() {
+  if (this.dropPlaceholder) {
+    this.hideDropPlaceholder();
+  }
+
+  _remove.apply( this, arguments );
+}
 
 // -----  ----- //
 
