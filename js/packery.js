@@ -610,7 +610,6 @@ proto.itemDragEnd = function( elem ) {
   item.once( 'layout', onDragEndLayoutComplete );
   this.once( 'layoutComplete', onDragEndLayoutComplete );
   item.moveTo( item.rect.x, item.rect.y );
-//this.layout();
   this.dragItemCount = Math.max( 0, this.dragItemCount - 1 );
   this.sortItemsByPosition();
   item.disablePlacing();
