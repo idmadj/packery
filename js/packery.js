@@ -108,6 +108,11 @@ proto._create = function() {
     }
   };
 
+  this.handleGenericDraggable = {
+    dragstart: this.itemDragStart.bind(this),
+    dragmove: this.itemDragMove.bind(this),
+    dragend: this.itemDragEnd.bind(this)
+  }
 };
 
 
@@ -654,6 +659,27 @@ proto._bindUIDraggableEvents = function( $elems, method ) {
     [ method ]( 'dragstart', handlers.start )
     [ method ]( 'drag', handlers.drag )
     [ method ]( 'dragstop', handlers.stop );
+};
+
+
+/**
+ * binds generic Draggable events
+ * @param {Draggable} draggable
+ */
+proto.bindGenericDraggableEvents = function( draggable ) {
+  this._bindGenericDraggableEvents( draggable, 'on' );
+};
+
+proto.unbindGenericDraggableEvents = function( draggable ) {
+  this._bindGenericDraggableEvents( draggable, 'off' );
+};
+
+proto._bindGenericDraggableEvents = function( draggable, method ) {
+  var handlers = this.handleGenericDraggable;
+  draggable
+    [ method ]( 'dragstart', handlers.dragstart )
+    [ method ]( 'dragmove', handlers.dragmove )
+    [ method ]( 'dragend', handlers.dragend );
 };
 
 // ----- destroy ----- //
