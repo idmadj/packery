@@ -70,7 +70,7 @@ proto._create = function() {
   this.shiftPacker = new Packer();
   this.isEnabled = true;
 
-  this.dragItemCount = 0;
+  this.draggedItems = [];
 
   // create drag handlers
   var _this = this;
@@ -162,7 +162,7 @@ proto._getMeasurements = function() {
 
 proto._getItemLayoutPosition = function( item ) {
   this._setRectSize( item.element, item.rect );
-  /*if ( this.isShifting || this.dragItemCount > 0 ) {
+  /*if ( this.isShifting || this.draggedItems.length > 0 ) {
     var packMethod = this._getPackMethod();
     this.packer[ packMethod ]( item.rect );
   } else {*/
@@ -420,7 +420,9 @@ proto.itemDragStart = function( elem ) {
 
   item.enablePlacing();
   item.showDropPlaceholder();
-  this.dragItemCount++;
+  if (this.draggedItems.indexOf(item) === -1) {
+    this.draggedItems.push(item);
+  }
   this.updateShiftTargets( item );
 };
 
@@ -615,7 +617,7 @@ proto.itemDragEnd = function( elem ) {
   item.once( 'layout', onDragEndLayoutComplete );
   this.once( 'layoutComplete', onDragEndLayoutComplete );
   item.moveTo( item.rect.x, item.rect.y );
-  this.dragItemCount = Math.max( 0, this.dragItemCount - 1 );
+  this.draggedItems = this.draggedItems.filter(e => e !== item);
   this.sortItemsByPosition();
   item.disablePlacing();
   this.unstamp( item.element );
@@ -680,6 +682,19 @@ proto._bindGenericDraggableEvents = function( draggable, method ) {
     [ method ]( 'dragstart', handlers.dragstart )
     [ method ]( 'dragmove', handlers.dragmove )
     [ method ]( 'dragend', handlers.dragend );
+};
+
+// ----- remove ----- //
+
+var _remove = proto.remove;
+proto.remove = function(elems) {
+  var removeItems = this.getItems( elems );
+  if ( removeItems && removeItems.length > 0 ) {
+    removeItems.forEach( ( item ) => {
+      this.draggedItems = this.draggedItems.filter(e => e !== item);
+    }, this );
+  }  
+  _remove.apply( this, arguments );
 };
 
 // ----- destroy ----- //
