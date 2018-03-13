@@ -481,7 +481,9 @@ proto.updateShiftTargets = function( dropItem ) {
   //var packMethod = this._getPackMethod();
 
   // Reuse the last item to preserve a trailing slot
-  items.push(items[items.length - 1]);
+  if (items.length) {
+    items.push(items[items.length - 1]);
+  }
 
   items.forEach( function( item ) {
     var rect = item.rect;
@@ -537,8 +539,11 @@ proto.shift = function( item, x, y ) {
       minDistance = distance;
     }
   });
-  item.rect.x = shiftPosition.x;
-  item.rect.y = shiftPosition.y;
+
+  if (shiftPosition) {
+    item.rect.x = shiftPosition.x;
+    item.rect.y = shiftPosition.y;
+  }
 };
 
 function getDistance( a, b ) {
