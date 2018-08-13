@@ -120,10 +120,12 @@ proto.positionDropPlaceholder = function() {
 };
 
 proto.hideDropPlaceholder = function() {
-  // only remove once, #333
-  var parent = this.dropPlaceholder.parentNode;
-  if ( parent ) {
-    parent.removeChild( this.dropPlaceholder );
+  if (this.dropPlaceholder) {
+    // only remove once, #333
+    var parent = this.dropPlaceholder.parentNode;
+    if ( parent ) {
+      parent.removeChild( this.dropPlaceholder );
+    }
   }
 };
 
